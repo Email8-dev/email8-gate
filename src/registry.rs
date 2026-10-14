@@ -101,12 +101,20 @@ impl Registry {
         }
         let fresh = self.fetch_active(service_type).await.unwrap_or_default();
         let mut cache = self.cache.write().await;
-        let set = cache.entry(service_type.to_string()).or_insert_with(|| {
-            ServiceSet { instances: Vec::new(), fetched_at: Instant::now(), next: 0 }
-        });
+        let set = cache
+            .entry(service_type.to_string())
+            .or_insert_with(|| ServiceSet {
+                instances: Vec::new(),
+                fetched_at: Instant::now(),
+                next: 0,
+            });
         // Preserve stable ordering: sort by (ip, port) like captain does.
         let mut sorted = fresh;
-        sorted.sort_by(|a, b| a.local_ip.cmp(&b.local_ip).then(a.local_port.cmp(&b.local_port)));
+        sorted.sort_by(|a, b| {
+            a.local_ip
+                .cmp(&b.local_ip)
+                .then(a.local_port.cmp(&b.local_port))
+        });
         // Keep the old set if the refresh came back empty (registry
         // blip) — better to route to a possibly-stale instance than to
         // refuse everything. Eviction on failed connect is the real
@@ -120,13 +128,20 @@ impl Registry {
 
     /// Round-robin next instance for `service_type`. Returns
     /// `NoUpstream` when the Active set is empty.
-    pub async fn next_instance(&self, service_type: &str) -> Result<ServiceInstance, crate::GateError> {
+    pub async fn next_instance(
+        &self,
+        service_type: &str,
+    ) -> Result<ServiceInstance, crate::GateError> {
         let instances = self.active_instances(service_type).await;
         if instances.is_empty() {
-            return Err(crate::GateError::NoUpstream { service: service_type.to_string() });
+            return Err(crate::GateError::NoUpstream {
+                service: service_type.to_string(),
+            });
         }
         let mut cache = self.cache.write().await;
-        let set = cache.get_mut(service_type).expect("cache entry populated above");
+        let set = cache
+            .get_mut(service_type)
+            .expect("cache entry populated above");
         // Defensive: the cached set may have been replaced concurrently.
         let len = set.instances.len().max(1);
         let idx = set.next % len;
@@ -163,7 +178,12 @@ impl Registry {
         let mut ports = std::collections::HashMap::new();
         for (proto, json) in &entries {
             if let Ok(v) = serde_json::from_str::<serde_json::Value>(json) {
-                if let (Some(p), t) = (v.get("port").and_then(|x| x.as_u64()), v.get("implicit_tls").and_then(|x| x.as_bool()).unwrap_or(false)) {
+                if let (Some(p), t) = (
+                    v.get("port").and_then(|x| x.as_u64()),
+                    v.get("implicit_tls")
+                        .and_then(|x| x.as_bool())
+                        .unwrap_or(false),
+                ) {
                     ports.insert(proto.clone(), (p as u16, t));
                 }
             }
@@ -171,14 +191,17 @@ impl Registry {
         ListenerMap { ports }
     }
 
-    async fn fetch_active(&self, service_type: &str) -> Result<Vec<ServiceInstance>, sentin8::middleware::ValkeyError> {
+    async fn fetch_active(
+        &self,
+        service_type: &str,
+    ) -> Result<Vec<ServiceInstance>, sentin8::middleware::ValkeyError> {
         let key = format!("captain:svc:{service_type}");
         use glide::AsyncCommands as _;
         let entries: std::collections::HashMap<String, String> =
             self.client.hgetall(&key).await.unwrap_or_default();
         let now = chrono::Utc::now().timestamp();
         let mut result = Vec::new();
-        for (_field, json) in &entries {
+        for json in entries.values() {
             if let Ok(inst) = serde_json::from_str::<ServiceInstance>(json) {
                 if inst.status == "Active" {
                     if let Some(ts) = inst.last_health_check {

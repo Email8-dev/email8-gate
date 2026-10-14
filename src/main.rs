@@ -36,12 +36,16 @@ mod registration {
 
     pub use email8_gate_server::registration::print;
 
-    const ADMIN_SCOPES: &[AdminScope] = &[
-        AdminScope::Typed { role: "email8:admin", scope: "email8:gate:telemetry:read" },
-    ];
+    const ADMIN_SCOPES: &[AdminScope] = &[AdminScope::Typed {
+        role: "email8:admin",
+        scope: "email8:gate:telemetry:read",
+    }];
 
     #[derive(OpenApi)]
-    #[openapi(info(title = "Email8:Gate", description = "Raw-TCP passthrough telemetry/health surface"))]
+    #[openapi(info(
+        title = "Email8:Gate",
+        description = "Raw-TCP passthrough telemetry/health surface"
+    ))]
     pub struct GateOpenApi;
 
     #[allow(dead_code)]
@@ -97,7 +101,10 @@ async fn bootstrap(core: sentin8::shell::ServiceCore) -> anyhow::Result<Arc<Gate
             }
         });
     }
-    tracing::info!(listeners = n_listeners, "email8:gate: raw listeners started");
+    tracing::info!(
+        listeners = n_listeners,
+        "email8:gate: raw listeners started"
+    );
     // Auth client for the RFW telemetry page (scope-gated).
     let auth_client = sentin8::auth::client::Client::new(sentin8::auth::client::ClientOptions {
         base_url: std::env::var("SENTIN8_AUTH_ISSUER")
@@ -147,34 +154,57 @@ fn gate_routes(
         )
         // RFW telemetry page + its data endpoints (story 7.6,
         // scope-gated by email8:gate:telemetry:read).
-        .route("/v1/admin/ui/{page}", get(email8_gate_server::admin::get_admin_ui))
-        .route("/v1/admin/{page}", post(email8_gate_server::admin::admin_data))
+        .route(
+            "/v1/admin/ui/{page}",
+            get(email8_gate_server::admin::get_admin_ui),
+        )
+        .route(
+            "/v1/admin/{page}",
+            post(email8_gate_server::admin::admin_data),
+        )
         // ── Sentin8:Policy admin API (Phase 28 §3.6 — shared
         // implementation; handlers generic over this state via
         // HasPolicyAdmin).
-        .route("/v1/admin/policy-sets",
-            get(sentin8::shield::admin::list_policy_sets::<Arc<GateState>>))
-        .route("/v1/admin/policy-sets/{name}",
+        .route(
+            "/v1/admin/policy-sets",
+            get(sentin8::shield::admin::list_policy_sets::<Arc<GateState>>),
+        )
+        .route(
+            "/v1/admin/policy-sets/{name}",
             get(sentin8::shield::admin::get_policy_set::<Arc<GateState>>)
                 .put(sentin8::shield::admin::put_policy_set::<Arc<GateState>>)
-                .delete(sentin8::shield::admin::delete_policy_set::<Arc<GateState>>))
-        .route("/v1/admin/policy-sets/{name}/test",
-            post(sentin8::shield::admin::test_policy_set::<Arc<GateState>>))
-        .route("/v1/admin/policy-sets/enforce",
-            post(sentin8::shield::admin::admin_enforce_policy_set::<Arc<GateState>>))
-        .route("/v1/admin/policy-sets/shadow",
-            post(sentin8::shield::admin::admin_shadow_policy_set::<Arc<GateState>>))
-        .route("/v1/admin/policy-sets/disable",
-            post(sentin8::shield::admin::admin_disable_policy_set::<Arc<GateState>>))
-        .route("/v1/admin/relations",
+                .delete(sentin8::shield::admin::delete_policy_set::<Arc<GateState>>),
+        )
+        .route(
+            "/v1/admin/policy-sets/{name}/test",
+            post(sentin8::shield::admin::test_policy_set::<Arc<GateState>>),
+        )
+        .route(
+            "/v1/admin/policy-sets/enforce",
+            post(sentin8::shield::admin::admin_enforce_policy_set::<Arc<GateState>>),
+        )
+        .route(
+            "/v1/admin/policy-sets/shadow",
+            post(sentin8::shield::admin::admin_shadow_policy_set::<Arc<GateState>>),
+        )
+        .route(
+            "/v1/admin/policy-sets/disable",
+            post(sentin8::shield::admin::admin_disable_policy_set::<Arc<GateState>>),
+        )
+        .route(
+            "/v1/admin/relations",
             get(sentin8::shield::admin::list_relations::<Arc<GateState>>)
                 .put(sentin8::shield::admin::put_relation::<Arc<GateState>>)
-                .delete(sentin8::shield::admin::delete_relation::<Arc<GateState>>))
-        .route("/v1/admin/relations/check",
-            get(sentin8::shield::admin::check_relation::<Arc<GateState>>))
-        .route("/v1/admin/attributes",
+                .delete(sentin8::shield::admin::delete_relation::<Arc<GateState>>),
+        )
+        .route(
+            "/v1/admin/relations/check",
+            get(sentin8::shield::admin::check_relation::<Arc<GateState>>),
+        )
+        .route(
+            "/v1/admin/attributes",
             get(sentin8::shield::admin::list_attributes::<Arc<GateState>>)
                 .put(sentin8::shield::admin::put_attribute::<Arc<GateState>>)
-                .delete(sentin8::shield::admin::delete_attribute::<Arc<GateState>>))
+                .delete(sentin8::shield::admin::delete_attribute::<Arc<GateState>>),
+        )
 }
-

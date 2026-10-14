@@ -25,8 +25,7 @@ pub async fn get_admin_ui(
     Path(page): Path<String>,
 ) -> Result<Json<serde_json::Value>, (StatusCode, String)> {
     let auth = sentin8::auth::client::verify_bearer_token(&state.auth_client, &headers)
-        .await
-        .map_err(|(c, m)| (c, m))?;
+        .await?;
     // Step-5 policy decision (Phase 28 §4.3): the scope-mirror carries
     // the telemetry scope + platform-admin permits.
     sentin8::shell::policy::require(
@@ -35,19 +34,45 @@ pub async fn get_admin_ui(
         &headers,
         sentin8::shield::EvalTarget::new("email8:gate:telemetry:read"),
     )
-    .await
-    .map_err(|(c, m)| (c, m))?;
+    .await?;
 
     if page != "gate" {
-        return Err((StatusCode::NOT_FOUND, format!("Unknown admin UI page: {page}")));
+        return Err((
+            StatusCode::NOT_FOUND,
+            format!("Unknown admin UI page: {page}"),
+        ));
     }
     let def = AdminPage::new("Gate Telemetry")
         .widget(RemoteWidget::DataTable(WidgetDataTable {
             columns: vec![
-                WidgetDataTableColumn { key: "name".into(), label: "Listener".into(), sortable: true, width: None, format: None },
-                WidgetDataTableColumn { key: "port".into(), label: "Well-known port".into(), sortable: true, width: None, format: None },
-                WidgetDataTableColumn { key: "upstream".into(), label: "Upstream service".into(), sortable: false, width: None, format: None },
-                WidgetDataTableColumn { key: "upstream_port".into(), label: "Upstream raw port".into(), sortable: false, width: None, format: None },
+                WidgetDataTableColumn {
+                    key: "name".into(),
+                    label: "Listener".into(),
+                    sortable: true,
+                    width: None,
+                    format: None,
+                },
+                WidgetDataTableColumn {
+                    key: "port".into(),
+                    label: "Well-known port".into(),
+                    sortable: true,
+                    width: None,
+                    format: None,
+                },
+                WidgetDataTableColumn {
+                    key: "upstream".into(),
+                    label: "Upstream service".into(),
+                    sortable: false,
+                    width: None,
+                    format: None,
+                },
+                WidgetDataTableColumn {
+                    key: "upstream_port".into(),
+                    label: "Upstream raw port".into(),
+                    sortable: false,
+                    width: None,
+                    format: None,
+                },
             ],
             data_endpoint: "/listeners".into(),
             sortable: true,
@@ -59,8 +84,20 @@ pub async fn get_admin_ui(
         }))
         .widget(RemoteWidget::DataTable(WidgetDataTable {
             columns: vec![
-                WidgetDataTableColumn { key: "metric".into(), label: "Metric".into(), sortable: true, width: None, format: None },
-                WidgetDataTableColumn { key: "value".into(), label: "Value".into(), sortable: false, width: None, format: None },
+                WidgetDataTableColumn {
+                    key: "metric".into(),
+                    label: "Metric".into(),
+                    sortable: true,
+                    width: None,
+                    format: None,
+                },
+                WidgetDataTableColumn {
+                    key: "value".into(),
+                    label: "Value".into(),
+                    sortable: false,
+                    width: None,
+                    format: None,
+                },
             ],
             data_endpoint: "/counters".into(),
             sortable: false,
@@ -71,7 +108,9 @@ pub async fn get_admin_ui(
             row_actions: vec![],
         }))
         .build();
-    Ok(Json(serde_json::to_value(&AdminUiResponse::page(def)).unwrap()))
+    Ok(Json(
+        serde_json::to_value(AdminUiResponse::page(def)).unwrap(),
+    ))
 }
 
 /// `POST /v1/admin/gate` — page data: counters + listener table split by
@@ -81,12 +120,8 @@ pub async fn admin_data(
     headers: HeaderMap,
     Path(page): Path<String>,
 ) -> Result<Json<serde_json::Value>, (StatusCode, String)> {
-    let auth = sentin8::auth::client::verify_bearer_token(
-        &state.auth_client,
-        &headers,
-    )
-    .await
-    .map_err(|(c, m)| (c, m))?;
+    let auth = sentin8::auth::client::verify_bearer_token(&state.auth_client, &headers)
+        .await?;
     // Step-5 policy decision (Phase 28 §4.3) — telemetry governs.
     sentin8::shell::policy::require(
         &state.engine,
@@ -94,8 +129,7 @@ pub async fn admin_data(
         &headers,
         sentin8::shield::EvalTarget::new("email8:gate:telemetry:read"),
     )
-    .await
-    .map_err(|(c, m)| (c, m))?;
+    .await?;
 
     if page != "gate" {
         return Err((StatusCode::NOT_FOUND, format!("Unknown admin page: {page}")));
@@ -104,23 +138,33 @@ pub async fn admin_data(
     // /v1/admin/gate/listeners and /v1/admin/gate/counters.
     if let Some(rest) = page_tail(&page) {
         return match rest {
-            "listeners" => Ok(Json(serde_json::json!(
-                state.config.listeners.iter().map(|l| serde_json::json!({
+            "listeners" => Ok(Json(serde_json::json!(state
+                .config
+                .listeners
+                .iter()
+                .map(|l| serde_json::json!({
                     "name": l.name,
                     "port": l.port,
                     "upstream": l.upstream_service,
                     "upstream_port": l.upstream_port,
-                })).collect::<Vec<_>>()
-            ))),
+                }))
+                .collect::<Vec<_>>()))),
             "counters" => {
                 let snap = crate::counters::snapshot();
-                let rows = serde_json::json!(snap.as_object().map(|o| {
-                    o.iter().map(|(k, v)| serde_json::json!({"metric": k, "value": v}))
-                        .collect::<Vec<_>>()
-                }).unwrap_or_default());
+                let rows = serde_json::json!(snap
+                    .as_object()
+                    .map(|o| {
+                        o.iter()
+                            .map(|(k, v)| serde_json::json!({"metric": k, "value": v}))
+                            .collect::<Vec<_>>()
+                    })
+                    .unwrap_or_default());
                 Ok(Json(rows))
             }
-            _ => Err((StatusCode::NOT_FOUND, format!("Unknown data endpoint: {rest}"))),
+            _ => Err((
+                StatusCode::NOT_FOUND,
+                format!("Unknown data endpoint: {rest}"),
+            )),
         };
     }
     Err((StatusCode::BAD_REQUEST, "Missing data sub-endpoint".into()))

@@ -97,8 +97,7 @@ impl Listener {
         table
             .iter()
             .filter_map(|(name, suffix, default_port, default_upstream, owners)| {
-                let port =
-                    env_u16_listener(&format!("EMAIL8_GATE_{suffix}_PORT"), *default_port)?;
+                let port = env_u16_listener(&format!("EMAIL8_GATE_{suffix}_PORT"), *default_port)?;
                 let upstream_port = env_u16_listener(
                     &format!("EMAIL8_GATE_{suffix}_UPSTREAM_PORT"),
                     *default_upstream,
@@ -172,7 +171,9 @@ impl GateConfig {
                 .unwrap_or(1_000),
             valkey_url: std::env::var("VALKEY_URL")
                 .or_else(|_| std::env::var("SENTIN8_VALKEY_URL"))
-                .unwrap_or_else(|_| sentin8::config::Sentin8Config::default_valkey_url().to_string()),
+                .unwrap_or_else(|_| {
+                    sentin8::config::Sentin8Config::default_valkey_url().to_string()
+                }),
         }
     }
 }
@@ -190,8 +191,7 @@ mod tests {
         assert_eq!(mta.get("smtp").unwrap(), "email8:mta");
         assert_eq!(mta.get("submission").unwrap(), "email8:mta");
         assert_eq!(mta.get("submissions").unwrap(), "email8:mta");
-        let access =
-            parse_upstreams("email8:access:imap imaps pop3 pop3s sieve", "email8:access");
+        let access = parse_upstreams("email8:access:imap imaps pop3 pop3s sieve", "email8:access");
         assert_eq!(access.get("sieve").unwrap(), "email8:access");
         assert!(mta.get("imap").is_none());
     }

@@ -11,10 +11,9 @@
 //! telemetry page (listener/upstream/counter view, story 7.6).
 
 use sentin8::registration::{
-    AdminScope, AdminUi, AdminUiPage, M2mGrant, PgRole, Registration, PolicySetDecl, RelationDecl,
+    AdminScope, AdminUi, AdminUiPage, M2mGrant, PgRole, PolicySetDecl, Registration, RelationDecl,
 };
 use utoipa::OpenApi;
-
 
 /// The Shield text of the declared scope-mirror set — public so the
 /// policy wiring tests (POLICY-7) assert against the REAL seed.
@@ -50,14 +49,17 @@ const RELATIONS: &[RelationDecl] = &[];
 /// registry reads can never connect. No cross-service scopes are
 /// needed (the gate makes no M2M HTTP calls; the row exists for the
 /// Valkey identity).
-const M2M_GRANTS: &[M2mGrant] = &[M2mGrant {
-    workload: "email8:gate",
-    scopes: &[],
-}, M2mGrant {
-    // Shield hot-reload consumer (BUSPOLICY-1 — see email8-access).
-    workload: "email8:gate-policy",
-    scopes: &["sentin8:bus:consume", "sentin8:stat:measure"],
-}];
+const M2M_GRANTS: &[M2mGrant] = &[
+    M2mGrant {
+        workload: "email8:gate",
+        scopes: &[],
+    },
+    M2mGrant {
+        // Shield hot-reload consumer (BUSPOLICY-1 — see email8-access).
+        workload: "email8:gate-policy",
+        scopes: &["sentin8:bus:consume", "sentin8:stat:measure"],
+    },
+];
 
 /// The gate's PostgreSQL role (group DESIGN.md §3.2): the shell boot's
 /// step-6 pool + the policy-admin surface (ServiceCore.admin) run
@@ -72,28 +74,36 @@ const PG_ROLES: &[PgRole] = &[PgRole {
 }];
 
 const ADMIN_SCOPES: &[AdminScope] = &[
-    AdminScope::Typed { role: "email8:admin", scope: "email8:gate:telemetry:read" },
+    AdminScope::Typed {
+        role: "email8:admin",
+        scope: "email8:gate:telemetry:read",
+    },
     // Policy-admin surface (policy design §3.6; principles §6.0b per-service scope).
-    AdminScope::Typed { role: "email8:gate:admin", scope: "email8:gate:policy:read" },
-    AdminScope::Typed { role: "email8:gate:admin", scope: "email8:gate:policy:write" },
-];
-
-const ADMIN_UI_PAGES: &[AdminUiPage] = &[
-    AdminUiPage {
-        route: "gate",
-        label: "Gate",
-        ui_endpoint: "/v1/admin/ui/gate",
-        data_endpoint: "/v1/admin/gate",
-        icon: "0xe30a", // Material Icons "settings_ethernet" — network passthrough
+    AdminScope::Typed {
+        role: "email8:gate:admin",
+        scope: "email8:gate:policy:read",
+    },
+    AdminScope::Typed {
+        role: "email8:gate:admin",
+        scope: "email8:gate:policy:write",
     },
 ];
 
-fn openapi_spec() -> serde_json::Value {
+const ADMIN_UI_PAGES: &[AdminUiPage] = &[AdminUiPage {
+    route: "gate",
+    label: "Gate",
+    ui_endpoint: "/v1/admin/ui/gate",
+    data_endpoint: "/v1/admin/gate",
+    icon: "0xe30a", // Material Icons "settings_ethernet" — network passthrough
+}];
 
+fn openapi_spec() -> serde_json::Value {
     // Portable stub when #[path]-included from tests (POLICY-7).
     #[cfg(not(test))]
-    { return serde_json::to_value(crate::registration::GateOpenApi::openapi())
-        .unwrap_or(serde_json::Value::Null); }
+    {
+        serde_json::to_value(crate::registration::GateOpenApi::openapi())
+            .unwrap_or(serde_json::Value::Null)
+    }
     #[cfg(test)]
     return serde_json::Value::Null;
 }
@@ -134,5 +144,8 @@ pub fn print(section: Option<String>) -> anyhow::Result<()> {
 }
 
 #[derive(OpenApi)]
-#[openapi(info(title = "Email8:Gate", description = "Raw-TCP passthrough telemetry/health surface"))]
+#[openapi(info(
+    title = "Email8:Gate",
+    description = "Raw-TCP passthrough telemetry/health surface"
+))]
 pub struct GateOpenApi;

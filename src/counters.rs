@@ -34,20 +34,30 @@ pub static COUNTERS: LazyLock<Counters> = LazyLock::new(|| Counters {
 pub fn record_connection(bytes_in: u64, bytes_out: u64) {
     COUNTERS.connections_total.fetch_add(1, Ordering::Relaxed);
     COUNTERS.active_connections.fetch_add(1, Ordering::Relaxed);
-    COUNTERS.bytes_in_total.fetch_add(bytes_in, Ordering::Relaxed);
-    COUNTERS.bytes_out_total.fetch_add(bytes_out, Ordering::Relaxed);
+    COUNTERS
+        .bytes_in_total
+        .fetch_add(bytes_in, Ordering::Relaxed);
+    COUNTERS
+        .bytes_out_total
+        .fetch_add(bytes_out, Ordering::Relaxed);
 }
 
 /// Pump exit: settle byte totals and drop the active gauge.
 pub fn record_connection_bytes(bytes_in: u64, bytes_out: u64) {
     COUNTERS.active_connections.fetch_sub(1, Ordering::Relaxed);
-    COUNTERS.bytes_in_total.fetch_add(bytes_in, Ordering::Relaxed);
-    COUNTERS.bytes_out_total.fetch_add(bytes_out, Ordering::Relaxed);
+    COUNTERS
+        .bytes_in_total
+        .fetch_add(bytes_in, Ordering::Relaxed);
+    COUNTERS
+        .bytes_out_total
+        .fetch_add(bytes_out, Ordering::Relaxed);
 }
 
 /// Record a failed upstream selection/connect.
 pub fn record_upstream_unavailable() {
-    COUNTERS.upstream_unavailable_total.fetch_add(1, Ordering::Relaxed);
+    COUNTERS
+        .upstream_unavailable_total
+        .fetch_add(1, Ordering::Relaxed);
 }
 
 /// Snapshot for the telemetry endpoint.

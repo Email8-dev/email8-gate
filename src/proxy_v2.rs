@@ -23,12 +23,7 @@ const SIG: [u8; 12] = [
 ];
 
 /// Build a minimal v2 PROXY header for a TCP/IPv4 connection.
-pub fn v2_tcp4(
-    src_ip: [u8; 4],
-    src_port: u16,
-    dst_ip: [u8; 4],
-    dst_port: u16,
-) -> Vec<u8> {
+pub fn v2_tcp4(src_ip: [u8; 4], src_port: u16, dst_ip: [u8; 4], dst_port: u16) -> Vec<u8> {
     let mut b = Vec::with_capacity(16 + 12);
     b.extend_from_slice(&SIG);
     b.push(0x21); // version 2, command PROXY
@@ -42,12 +37,7 @@ pub fn v2_tcp4(
 }
 
 /// Build a v2 TCP/IPv6 header.
-pub fn v2_tcp6(
-    src_ip: [u8; 16],
-    src_port: u16,
-    dst_ip: [u8; 16],
-    dst_port: u16,
-) -> Vec<u8> {
+pub fn v2_tcp6(src_ip: [u8; 16], src_port: u16, dst_ip: [u8; 16], dst_port: u16) -> Vec<u8> {
     let mut b = Vec::with_capacity(16 + 36);
     b.extend_from_slice(&SIG);
     b.push(0x21);

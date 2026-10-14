@@ -28,8 +28,9 @@ use tokio::sync::Semaphore;
 /// upgrades zero-downtime (design §4.2, story 7.6). Standard bind
 /// otherwise.
 async fn bind_listener(addr: &str) -> anyhow::Result<TcpListener> {
-    let sock: std::net::SocketAddr =
-        addr.parse().map_err(|e| anyhow::anyhow!("bad listener addr {addr}: {e}"))?;
+    let sock: std::net::SocketAddr = addr
+        .parse()
+        .map_err(|e| anyhow::anyhow!("bad listener addr {addr}: {e}"))?;
     let reuse = std::env::var("EMAIL8_GATE_REUSE_PORT")
         .map(|v| v == "true" || v == "1")
         .unwrap_or(false);
@@ -190,8 +191,9 @@ async fn handle_connection(
     }
 
     counters::record_connection(0, 0); // byte totals settle at pump exit
-    let (bytes_in, bytes_out) =
-        tokio::io::copy_bidirectional(&mut client, &mut upstream).await.unwrap_or((0, 0));
+    let (bytes_in, bytes_out) = tokio::io::copy_bidirectional(&mut client, &mut upstream)
+        .await
+        .unwrap_or((0, 0));
     // FIN propagation both directions is copy_bidirectional's job; no
     // extra half-close dance needed. Idle reaping stays upstream's job.
     counters::record_connection_bytes(bytes_in, bytes_out);
@@ -211,6 +213,9 @@ fn listener_upstream_port_opt(config: &GateConfig, listener_name: &str) -> Optio
     listener_config(config, listener_name).map(|l| l.upstream_port)
 }
 
-fn listener_config<'c>(config: &'c GateConfig, listener_name: &str) -> Option<&'c crate::config::Listener> {
+fn listener_config<'c>(
+    config: &'c GateConfig,
+    listener_name: &str,
+) -> Option<&'c crate::config::Listener> {
     config.listeners.iter().find(|l| l.name == listener_name)
 }

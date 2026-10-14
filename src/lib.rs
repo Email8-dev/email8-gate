@@ -12,8 +12,8 @@ pub mod config;
 pub mod counters;
 pub mod proxy_v2;
 pub mod pump;
-pub mod registry;
 pub mod registration;
+pub mod registry;
 pub mod state;
 
 /// Shared gate error type (thiserror).
