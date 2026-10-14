@@ -1,0 +1,48 @@
+# SPDX-FileCopyrightText: Copyright Logically Magic Inc. <hello@logicallymagic.com>
+# SPDX-FileCopyrightText: Copyright Hamid Jahanzad <Hamid@Jahanzad.com>
+# SPDX-FileCopyrightText: Copyright Contributors to the Email8:Gate
+# SPDX-License-Identifier: Apache-2.0
+
+[package]
+name = "email8-gate"
+version = "0.1.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/Email8-dev/email8-gate"
+rust-version = "1.85"
+description = "Sentin8 Email8:Gate — raw-TCP passthrough for the well-known mail ports."
+
+[[bin]]
+name = "email8-gate"
+path = "src/main.rs"
+
+[lib]
+name = "email8_gate_server"
+path = "src/lib.rs"
+
+
+[dependencies]
+# Platform SDK pin (RS 2.3) - the only cross-repo dependency; carries the
+# entire shared library workspace behind the `sentin8` facade.
+sentin8 = { git = "https://github.com/Sentin8/sentin8-sdk", tag = "sdk-v0.6.3" }
+# email8 namespace facade pin - carries this vertical's contracts/clients.
+email8 = { git = "https://github.com/Email8-dev/email8-sdk", tag = "email8-v0.5.3" }
+
+socket2 = "0.6"
+axum = { version = "0.8", features = ["macros", "ws"] }
+tokio = { version = "1", features = ["full", "full"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+dotenvy = "0.15"
+thiserror = "1"
+anyhow = "1"
+chrono = { version = "0.4", features = ["serde"] }
+mimalloc = { version = "0.1", default-features = false }
+# Valkey GLIDE — the platform's sole Valkey client engine (group
+# DESIGN.md §3.1): the registry reader presents the gate's certificate
+# identity via the SDK factory.
+valkey-glide = "0.9.0"
+utoipa = { version = "5", features = ["chrono", "uuid"] }
+uuid = { version = "1", features = ["v4", "v5", "serde"] }
