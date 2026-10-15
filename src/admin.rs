@@ -24,8 +24,7 @@ pub async fn get_admin_ui(
     headers: HeaderMap,
     Path(page): Path<String>,
 ) -> Result<Json<serde_json::Value>, (StatusCode, String)> {
-    let auth = sentin8::auth::client::verify_bearer_token(&state.auth_client, &headers)
-        .await?;
+    let auth = sentin8::auth::client::verify_bearer_token(&state.auth_client, &headers).await?;
     // Step-5 policy decision (Phase 28 §4.3): the scope-mirror carries
     // the telemetry scope + platform-admin permits.
     sentin8::shell::policy::require(
@@ -120,8 +119,7 @@ pub async fn admin_data(
     headers: HeaderMap,
     Path(page): Path<String>,
 ) -> Result<Json<serde_json::Value>, (StatusCode, String)> {
-    let auth = sentin8::auth::client::verify_bearer_token(&state.auth_client, &headers)
-        .await?;
+    let auth = sentin8::auth::client::verify_bearer_token(&state.auth_client, &headers).await?;
     // Step-5 policy decision (Phase 28 §4.3) — telemetry governs.
     sentin8::shell::policy::require(
         &state.engine,
