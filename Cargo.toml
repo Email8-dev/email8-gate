@@ -39,7 +39,6 @@ dotenvy = "0.15"
 thiserror = "1"
 anyhow = "1"
 chrono = { version = "0.4", features = ["serde"] }
-mimalloc = { version = "0.1", default-features = false }
 # Valkey GLIDE — the platform's sole Valkey client engine (group
 # DESIGN.md §3.1): the registry reader presents the gate's certificate
 # identity via the SDK factory.

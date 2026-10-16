@@ -18,11 +18,6 @@ use email8_gate_server::{config, counters, registry};
 use std::sync::Arc;
 use tokio::sync::watch;
 
-/// mimalloc global allocator (design §6 D13) — the per-connection copy
-/// pump allocates through it (buffers, watcher tasks).
-#[global_allocator]
-static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
-
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     sentin8::shell::serve(build_shell()).await
