@@ -136,10 +136,16 @@ fn gate_routes(
         // the shell's default mount).
         .route(
             "/v1/health",
+            // Carries the binary's build identity (`version`/`build`,
+            // BUILDID-1) so captain's monitor populates `make status`'s
+            // VERSION column — the consuming BINARY's identity, never a
+            // shared crate's.
             get(|| async {
                 axum::Json(serde_json::json!({
                     "service": "email8:gate",
                     "status": "ok",
+                    "version": sentin8::build_info::id(),
+                    "build": sentin8::build_info::build_hash(),
                 }))
             }),
         )
