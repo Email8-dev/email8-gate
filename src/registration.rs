@@ -6,12 +6,15 @@
 //! Service self-registration data for Email8:Gate.
 //!
 //! Output via `--print-registration` flag. The gate is
-//! infrastructure-only: no PG role, no SQL migrations, no error codes;
-//! the typed `email8:gate:telemetry:read` scope gates the RFW
-//! telemetry page (listener/upstream/counter view, story 7.6).
+//! infrastructure-only for DOMAIN tables (no error codes; the typed
+//! `email8:gate:telemetry:read` scope gates the RFW telemetry page,
+//! story 7.6) — but it carries the platform-standard producer tables:
+//! the `gate.audit_journal` leaf-schema table (AUDJOUR-1, migration v2)
+//! that the shell's boot-8c pusher drains to Sys's audit ingest API.
 
 use sentin8::registration::{
     AdminScope, AdminUi, AdminUiPage, M2mGrant, PgRole, PolicySetDecl, Registration, RelationDecl,
+    SqlMigration,
 };
 use utoipa::OpenApi;
 
@@ -49,6 +52,11 @@ const RELATIONS: &[RelationDecl] = &[];
 /// registry reads can never connect. No cross-service scopes are
 /// needed (the gate makes no M2M HTTP calls; the row exists for the
 /// Valkey identity).
+/// AUDJOUR-1: the local audit journal DDL (sql/audit.sql) — the gate's
+/// first SQL migration. The `gate` leaf schema is created by the file
+/// itself (it holds nothing else today).
+const SQL_1_AUDIT: &str = include_str!("../sql/audit.sql");
+
 const M2M_GRANTS: &[M2mGrant] = &[
     M2mGrant {
         workload: "email8:gate",
@@ -58,6 +66,15 @@ const M2M_GRANTS: &[M2mGrant] = &[
         // Shield hot-reload consumer (BUSPOLICY-1 — see email8-access).
         workload: "email8:gate-policy",
         scopes: &["sentin8:bus:consume", "sentin8:stat:measure"],
+    },
+    M2mGrant {
+        // Audit-journal pusher's sys-ingest scope (AUDJOUR-1): the shell's
+        // boot-8c pusher presents the `gate-audit` certificate to Sys
+        // `POST /v1/audit` — this grant row is what makes the workload
+        // enrollable (the BUSPOLICY-1 class: an undeclared cert mints but
+        // can never be authorized).
+        workload: "gate-audit",
+        scopes: &["sentin8:sys:audit:write"],
     },
 ];
 
@@ -124,7 +141,18 @@ pub fn print(section: Option<String>) -> anyhow::Result<()> {
             service_flag: "email8",
             pages: ADMIN_UI_PAGES,
         }),
-        sql_migrations: vec![],
+        sql_migrations: vec![SqlMigration {
+            // AUDJOUR-1 migration v2: the local audit journal in the
+            // `gate` leaf schema — the 15-column contract of
+            // `sentin8_audit::audit_journal_sql` (design/sentin8-audit-
+            // journal-provisioning-design.md §2.1). v2 (not v1) keeps the
+            // never-reuse invariant — v1 never existed for gate, but the
+            // version ladder starts where the platform's
+            // `vertical_migrations` table will never collide.
+            version: 2,
+            name: "audit",
+            sql: SQL_1_AUDIT,
+        }],
         audit_findings: None,
         service_actions: None,
         m2m_grants: Some(M2M_GRANTS),
