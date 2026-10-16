@@ -17,6 +17,10 @@
         "EMAIL8_GATE_PROXY_PROTO": "true",
         "EMAIL8_GATE_MTA_UPSTREAMS": "email8-mta:smtp,submission,submissions",
         "EMAIL8_GATE_ACCESS_UPSTREAMS": "email8-access:imap,imaps,pop3,pop3s,sieve"
+      },
+      "telemetry_property": {
+        "slug": "gate",
+        "name": "Email8:Gate Telemetry"
       }
     }
   ]
