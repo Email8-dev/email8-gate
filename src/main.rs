@@ -36,10 +36,77 @@ mod registration {
         scope: "email8:gate:telemetry:read",
     }];
 
+    /// Spec wrappers for the two inline closures in `gate_routes` (OAPEC §2).
+    #[allow(dead_code)]
+    pub mod spec_helpers {
+        /// Spec wrapper for the inline `/v1/health` closure.
+        #[utoipa::path(
+            get,
+            path = "/v1/health",
+            responses(
+                (status = 200, description = "Service is healthy", body = serde_json::Value),
+            ),
+            security(),
+            tag = "email8-gate",
+        )]
+        pub async fn gate_health_spec() {}
+
+        /// Spec wrapper for the inline `/v1/gate/telemetry` closure.
+        #[utoipa::path(
+            get,
+            path = "/v1/gate/telemetry",
+            responses(
+                (status = 200, description = "Telemetry snapshot", body = serde_json::Value),
+            ),
+            security(),
+            tag = "email8-gate",
+        )]
+        pub async fn gate_telemetry_spec() {}
+    }
+
     #[derive(OpenApi)]
-    #[openapi(info(
+    #[openapi(
+    info(
         title = "Email8:Gate",
         description = "Raw-TCP passthrough telemetry/health surface"
+    ),
+    paths(
+        email8_gate_server::admin::get_admin_ui,
+        email8_gate_server::admin::admin_data,
+        spec_helpers::gate_health_spec,
+        spec_helpers::gate_telemetry_spec,
+        sentin8::shell::policy_list_sets,
+        sentin8::shell::policy_get_set,
+        sentin8::shell::policy_put_set,
+        sentin8::shell::policy_delete_set,
+        sentin8::shell::policy_test_set,
+        sentin8::shell::policy_mode_enforce,
+        sentin8::shell::policy_mode_shadow,
+        sentin8::shell::policy_mode_disable,
+        sentin8::shell::policy_list_relations,
+        sentin8::shell::policy_put_relation,
+        sentin8::shell::policy_delete_relation,
+        sentin8::shell::policy_check_relation,
+        sentin8::shell::policy_list_attributes,
+        sentin8::shell::policy_put_attribute,
+        sentin8::shell::policy_delete_attribute,
+    ),
+    components(schemas(
+        sentin8::shield::admin::PutPolicySetBody,
+        sentin8::shield::admin::TestPolicySetBody,
+        sentin8::shield::admin::PolicyModeBody,
+        sentin8::shield::admin::PutRelationBody,
+        sentin8::shield::admin::DeleteRelationQuery,
+        sentin8::shield::admin::RelationCheckQuery,
+        sentin8::shield::admin::PutAttributeBody,
+        sentin8::shield::admin::ListAttributesQuery,
+        sentin8::shield::admin::DeleteAttributeQuery,
+    )),
+    security(),
+    tags(
+        (name = "email8-gate", description = "Sentin8 Email8:Gate — the mail-protocol ingress (IMAP/POP3/SMTP/DAV proxy)"),
+        (name = "admin-ui", description = "RFW telemetry admin UI"),
+        (name = "policy", description = "Shield policy admin (shared annotated wrappers)"),
     ))]
     pub struct GateOpenApi;
 

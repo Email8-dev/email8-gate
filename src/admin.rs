@@ -19,6 +19,18 @@ use sentin8::rfw::widget::*;
 use crate::state::GateState;
 
 /// `GET /v1/admin/ui/gate` — RFW definition of the telemetry page.
+#[utoipa::path(
+    get,
+    path = "/v1/admin/ui/{page}",
+    params(("page" = String, Path, description = "RFW page name (gate telemetry)")),
+    responses(
+        (status = 200, description = "RFW page definition", body = serde_json::Value),
+        (status = 401, description = "Not authenticated"),
+        (status = 403, description = "Missing email8:gate:telemetry:read"),
+    ),
+    security(("email8:gate:telemetry:read" = [])),
+    tag = "admin-ui",
+)]
 pub async fn get_admin_ui(
     State(state): State<std::sync::Arc<GateState>>,
     headers: HeaderMap,
@@ -114,6 +126,17 @@ pub async fn get_admin_ui(
 
 /// `POST /v1/admin/gate` — page data: counters + listener table split by
 /// the sub-endpoint path the RFW widgets post to.
+#[utoipa::path(
+    post,
+    path = "/v1/admin/{page}",
+    params(("page" = String, Path, description = "Admin data page (telemetry)")),
+    responses(
+        (status = 200, description = "The page's admin rows", body = serde_json::Value),
+        (status = 403, description = "Missing email8:gate:telemetry:read"),
+    ),
+    security(("email8:gate:telemetry:read" = [])),
+    tag = "admin-ui",
+)]
 pub async fn admin_data(
     State(state): State<std::sync::Arc<GateState>>,
     headers: HeaderMap,
