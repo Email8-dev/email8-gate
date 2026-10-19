@@ -70,3 +70,12 @@ pub fn snapshot() -> serde_json::Value {
         "bytes_out_total": COUNTERS.bytes_out_total.load(Ordering::Relaxed),
     })
 }
+
+/// Telemetry counters snapshot (a dynamic metric map - honest
+/// transparent wrapper; the metric name set is runtime-defined).
+#[derive(Debug, serde::Serialize, utoipa::ToSchema)]
+#[serde(transparent)]
+pub struct GateTelemetry(
+    /// Counters snapshot (metric-name → value).
+    pub serde_json::Value,
+);

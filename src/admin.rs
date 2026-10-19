@@ -24,7 +24,7 @@ use crate::state::GateState;
     path = "/v1/admin/ui/{page}",
     params(("page" = String, Path, description = "RFW page name (gate telemetry)")),
     responses(
-        (status = 200, description = "RFW page definition", body = serde_json::Value),
+        (status = 200, description = "RFW page definition", body = AdminUiResponse),
         (status = 401, description = "Not authenticated"),
         (status = 403, description = "Missing email8:gate:telemetry:read"),
     ),
@@ -35,7 +35,7 @@ pub async fn get_admin_ui(
     State(state): State<std::sync::Arc<GateState>>,
     headers: HeaderMap,
     Path(page): Path<String>,
-) -> Result<Json<serde_json::Value>, (StatusCode, String)> {
+) -> Result<Json<AdminUiResponse>, (StatusCode, String)> {
     let auth = sentin8::auth::client::verify_bearer_token(&state.auth_client, &headers).await?;
     // Step-5 policy decision (Phase 28 §4.3): the scope-mirror carries
     // the telemetry scope + platform-admin permits.
@@ -119,9 +119,7 @@ pub async fn get_admin_ui(
             row_actions: vec![],
         }))
         .build();
-    Ok(Json(
-        serde_json::to_value(AdminUiResponse::page(def)).unwrap(),
-    ))
+    Ok(Json(AdminUiResponse::page(def)))
 }
 
 /// `POST /v1/admin/gate` - page data: counters + listener table split by
@@ -131,7 +129,7 @@ pub async fn get_admin_ui(
     path = "/v1/admin/{page}",
     params(("page" = String, Path, description = "Admin data page (telemetry)")),
     responses(
-        (status = 200, description = "The page's admin rows", body = serde_json::Value),
+        (status = 200, description = "The page's admin rows", body = Vec<serde_json::Value>),
         (status = 403, description = "Missing email8:gate:telemetry:read"),
     ),
     security(("email8:gate:telemetry:read" = [])),
@@ -141,7 +139,7 @@ pub async fn admin_data(
     State(state): State<std::sync::Arc<GateState>>,
     headers: HeaderMap,
     Path(page): Path<String>,
-) -> Result<Json<serde_json::Value>, (StatusCode, String)> {
+) -> Result<Json<Vec<serde_json::Value>>, (StatusCode, String)> {
     let auth = sentin8::auth::client::verify_bearer_token(&state.auth_client, &headers).await?;
     // Step-5 policy decision (Phase 28 §4.3) - telemetry governs.
     sentin8::shell::policy::require(
@@ -159,27 +157,31 @@ pub async fn admin_data(
     // /v1/admin/gate/listeners and /v1/admin/gate/counters.
     if let Some(rest) = page_tail(&page) {
         return match rest {
-            "listeners" => Ok(Json(serde_json::json!(state
-                .config
-                .listeners
-                .iter()
-                .map(|l| serde_json::json!({
-                    "name": l.name,
-                    "port": l.port,
-                    "upstream": l.upstream_service,
-                    "upstream_port": l.upstream_port,
-                }))
-                .collect::<Vec<_>>()))),
+            "listeners" => Ok(Json(
+                state
+                    .config
+                    .listeners
+                    .iter()
+                    .map(|l| {
+                        serde_json::json!({
+                            "name": l.name,
+                            "port": l.port,
+                            "upstream": l.upstream_service,
+                            "upstream_port": l.upstream_port,
+                        })
+                    })
+                    .collect::<Vec<_>>(),
+            )),
             "counters" => {
                 let snap = crate::counters::snapshot();
-                let rows = serde_json::json!(snap
+                let rows = snap
                     .as_object()
                     .map(|o| {
                         o.iter()
                             .map(|(k, v)| serde_json::json!({"metric": k, "value": v}))
                             .collect::<Vec<_>>()
                     })
-                    .unwrap_or_default());
+                    .unwrap_or_default();
                 Ok(Json(rows))
             }
             _ => Err((

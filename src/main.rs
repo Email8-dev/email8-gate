@@ -44,7 +44,7 @@ mod registration {
             get,
             path = "/v1/health",
             responses(
-                (status = 200, description = "Service is healthy", body = serde_json::Value),
+                (status = 200, description = "Service is healthy", body = sentin8::middleware::health::LiveHealth),
             ),
             security(),
             tag = "email8-gate",
@@ -56,7 +56,7 @@ mod registration {
             get,
             path = "/v1/gate/telemetry",
             responses(
-                (status = 200, description = "Telemetry snapshot", body = serde_json::Value),
+                (status = 200, description = "Telemetry snapshot", body = crate::counters::GateTelemetry),
             ),
             security(),
             tag = "email8-gate",
