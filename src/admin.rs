@@ -3,7 +3,7 @@
 // SPDX-FileCopyrightText: Copyright Contributors to the Email8:Gate
 // SPDX-License-Identifier: Apache-2.0
 
-//! Email8:Gate admin — RFW telemetry page (listener/upstream/counter
+//! Email8:Gate admin - RFW telemetry page (listener/upstream/counter
 //! view) + data endpoint. Scope-gated: `email8:gate:telemetry:read`
 //! (gate design §3.5, story 7.6).
 
@@ -18,7 +18,7 @@ use sentin8::rfw::widget::*;
 
 use crate::state::GateState;
 
-/// `GET /v1/admin/ui/gate` — RFW definition of the telemetry page.
+/// `GET /v1/admin/ui/gate` - RFW definition of the telemetry page.
 #[utoipa::path(
     get,
     path = "/v1/admin/ui/{page}",
@@ -124,7 +124,7 @@ pub async fn get_admin_ui(
     ))
 }
 
-/// `POST /v1/admin/gate` — page data: counters + listener table split by
+/// `POST /v1/admin/gate` - page data: counters + listener table split by
 /// the sub-endpoint path the RFW widgets post to.
 #[utoipa::path(
     post,
@@ -143,7 +143,7 @@ pub async fn admin_data(
     Path(page): Path<String>,
 ) -> Result<Json<serde_json::Value>, (StatusCode, String)> {
     let auth = sentin8::auth::client::verify_bearer_token(&state.auth_client, &headers).await?;
-    // Step-5 policy decision (Phase 28 §4.3) — telemetry governs.
+    // Step-5 policy decision (Phase 28 §4.3) - telemetry governs.
     sentin8::shell::policy::require(
         &state.engine,
         &auth,
@@ -205,7 +205,7 @@ fn page_tail(page: &str) -> Option<&str> {
 /// loaded the engine into `GateState::engine` and stashed the shell's
 /// shared admin surface alongside it; the shared handlers extract it
 /// via `HasPolicyAdmin` so the admin surface and the request path
-/// evaluate the SAME cache. (Impl lives in the lib — `GateState` is
+/// evaluate the SAME cache. (Impl lives in the lib - `GateState` is
 /// lib-owned and the bin crate cannot impl a foreign trait on it.)
 impl sentin8::shield::admin::HasPolicyAdmin for GateState {
     fn policy_admin(&self) -> &sentin8::shield::admin::SharedAdminState {

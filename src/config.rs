@@ -12,17 +12,17 @@
 //!   `EMAIL8_GATE_POP3S_PORT=995`, `EMAIL8_GATE_SIEVE_PORT=4190`.
 //!   An empty value disables that listener (dev boxes without
 //!   CAP_NET_BIND_SERVICE).
-//! - `EMAIL8_GATE_PROXY_PROTO` — emit PROXY protocol v2 (default true;
+//! - `EMAIL8_GATE_PROXY_PROTO` - emit PROXY protocol v2 (default true;
 //!   upstreams must enable `accept_proxy` on the gated listeners).
 //! - `EMAIL8_GATE_MTA_UPSTREAMS=email8-mta:smtp,submission,submissions`
 //! - `EMAIL8_GATE_ACCESS_UPSTREAMS=email8-access:imap,imaps,pop3,pop3s,sieve`
-//!   (`service:listener` CSV — declarative, no hardcoded knowledge).
-//! - `EMAIL8_GATE_MAX_CONNS=2048` — per-listener concurrency cap.
-//! - `VALKEY_URL` / `SENTIN8_VALKEY_URL` — registry reads.
+//!   (`service:listener` CSV - declarative, no hardcoded knowledge).
+//! - `EMAIL8_GATE_MAX_CONNS=2048` - per-listener concurrency cap.
+//! - `VALKEY_URL` / `SENTIN8_VALKEY_URL` - registry reads.
 //!
 //! Listener→upstream wiring is derived by convention: listener keys map
 //! to upstream service via the CSV mapping above, and the upstream's
-//! own port env is `{SERVICE_PREFIX}_{LISTENER}_PORT` — but the gate
+//! own port env is `{SERVICE_PREFIX}_{LISTENER}_PORT` - but the gate
 //! never reads upstream envs; it discovers `{ip}:{port}` from the
 //! registry, so the CSV only partitions listeners per service.
 
@@ -38,7 +38,7 @@ pub struct Listener {
     /// Upstream service type in the captain registry.
     pub upstream_service: &'static str,
     /// The RAW port the upstream service binds for this protocol (the
-    /// non-privileged fallback — upstreams no longer own well-known
+    /// non-privileged fallback - upstreams no longer own well-known
     /// ports; design §4.1). Overridable via EMAIL8_GATE_{NAME}_UPSTREAM_PORT.
     pub upstream_port: u16,
 }
@@ -46,7 +46,7 @@ pub struct Listener {
 /// Declarative listener → upstream partition, from
 /// `EMAIL8_GATE_{MTA,ACCESS}_UPSTREAMS` CSVs. The service identity is
 /// the colon form `email8:mta` (architecture-principles §6.0), so the
-/// prefix split is on the LAST colon — `email8:mta:smtp submission`
+/// prefix split is on the LAST colon - `email8:mta:smtp submission`
 /// yields service `email8:mta`, listeners `smtp submission`.
 fn parse_upstreams(spec: &str, default_service: &str) -> HashMap<String, String> {
     let mut map = HashMap::new();
@@ -198,7 +198,7 @@ mod tests {
 
     #[test]
     fn listener_table_env_semantics() {
-        // Env is process-global — run both env-dependent checks in ONE
+        // Env is process-global - run both env-dependent checks in ONE
         // test so parallel execution cannot race the set/remove calls.
         for k in [
             "EMAIL8_GATE_SMTP_PORT",

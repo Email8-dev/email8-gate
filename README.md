@@ -1,4 +1,4 @@
-# Sentin8 Email8:Gate — Mail Port Passthrough
+# Sentin8 Email8:Gate - Mail Port Passthrough
 
 ## 1. Summary
 
@@ -6,7 +6,7 @@ Email8:Gate is the raw-TCP front door for the well-known mail ports
 (SMTP submission 587, SMTPS 465, IMAPS 993, …). It terminates the
 TLS/TCP listener set, discovers the MTA/Access instances' actual
 binds via the Valkey registry, and passthroughs protocol streams to
-them — one Gate owns the well-known ports per host while each
+them - one Gate owns the well-known ports per host while each
 instance binds OS-ephemeral.
 
 ## 2. Architecture
@@ -27,7 +27,7 @@ graph TD
   instance binds.
 - Protocol-transparent: no mail parsing at the Gate layer.
 - Audit journal (AUDJOUR-1, architecture-principles §6.8): the
-  `gate.audit_journal` leaf-schema table (migration v2 — the 15-column
+  `gate.audit_journal` leaf-schema table (migration v2 - the 15-column
   `sentin8_audit::audit_journal_sql` contract, the gate leaf schema's
   first object) is drained to Sys `POST /v1/audit` by the shell's
   boot-8c pusher, presenting the `gate-audit` workload certificate

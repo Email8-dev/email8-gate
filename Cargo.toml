@@ -10,7 +10,7 @@ edition = "2021"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/Email8-dev/email8-gate"
 rust-version = "1.85"
-description = "Sentin8 Email8:Gate — raw-TCP passthrough for the well-known mail ports."
+description = "Sentin8 Email8:Gate - raw-TCP passthrough for the well-known mail ports."
 
 [[bin]]
 name = "email8-gate"
@@ -38,7 +38,7 @@ dotenvy = "0.15"
 thiserror = "1"
 anyhow = "1"
 chrono = { version = "0.4", features = ["serde"] }
-# Valkey GLIDE — the platform's sole Valkey client engine (group
+# Valkey GLIDE - the platform's sole Valkey client engine (group
 # DESIGN.md §3.1): the registry reader presents the gate's certificate
 # identity via the SDK factory.
 valkey-glide = "0.9.0"

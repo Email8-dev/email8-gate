@@ -3,7 +3,7 @@
 // SPDX-FileCopyrightText: Copyright Contributors to the Email8:Gate
 // SPDX-License-Identifier: Apache-2.0
 
-//! Sentin8 Email8:Gate — service library root.
+//! Sentin8 Email8:Gate - service library root.
 //!
 //! See `email8/design/sentin8-email8-gate-technical-design.md`.
 

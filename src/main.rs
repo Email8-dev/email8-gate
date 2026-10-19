@@ -3,7 +3,7 @@
 // SPDX-FileCopyrightText: Copyright Contributors to the Email8:Gate
 // SPDX-License-Identifier: Apache-2.0
 
-//! Sentin8 Email8:Gate — raw-TCP passthrough for the well-known mail
+//! Sentin8 Email8:Gate - raw-TCP passthrough for the well-known mail
 //! protocol ports (25/587/465/143/993/110/995/4190).
 //!
 //! See `email8/design/sentin8-email8-gate-technical-design.md`.
@@ -104,7 +104,7 @@ mod registration {
     )),
     security(),
     tags(
-        (name = "email8-gate", description = "Sentin8 Email8:Gate — the mail-protocol ingress (IMAP/POP3/SMTP/DAV proxy)"),
+        (name = "email8-gate", description = "Sentin8 Email8:Gate - the mail-protocol ingress (IMAP/POP3/SMTP/DAV proxy)"),
         (name = "admin-ui", description = "RFW telemetry admin UI"),
         (name = "policy", description = "Shield policy admin (shared annotated wrappers)"),
     ))]
@@ -125,12 +125,12 @@ fn build_shell() -> sentin8::shell::Sentin8Shell<Arc<GateState>> {
     sentin8::shell::Sentin8Shell::new("email8:gate", "EMAIL8_GATE")
         .with_registration(registration::print)
         .with_state(|core| async move {
-            // 2. PQ crypto provider before any TLS use (platform pattern —
+            // 2. PQ crypto provider before any TLS use (platform pattern -
             //    serve() installs dotenvy itself at step 3).
             let _ = sentin8::tls::crypto::sentin8_pq_provider().install_default();
             bootstrap(core).await
         })
-        // with_own_health suppresses the shell's health mount — the gate
+        // with_own_health suppresses the shell's health mount - the gate
         // provides its own /v1/health inside gate_routes (plus telemetry).
         .with_own_health()
         .with_router(gate_routes)
@@ -173,7 +173,7 @@ async fn bootstrap(core: sentin8::shell::ServiceCore) -> anyhow::Result<Arc<Gate
             .unwrap_or_else(|_| "https://auth.ops.sys.sentin8.local".to_string()),
         ..Default::default()
     });
-    // Sentin8:Policy engine (Phase 28, §4.2b — shell-owned boot): the
+    // Sentin8:Policy engine (Phase 28, §4.2b - shell-owned boot): the
     // engine arrived booted in `core.admin.policy` (load + shared deps +
     // hot-reload + stat emitter). Gate only consumes the Arc.
     let engine = core.admin.policy.clone();
@@ -200,7 +200,7 @@ fn gate_routes(
             "/v1/health",
             // Carries the binary's build identity (`version`/`build`,
             // BUILDID-1) so captain's monitor populates `make status`'s
-            // VERSION column — the consuming BINARY's identity, never a
+            // VERSION column - the consuming BINARY's identity, never a
             // shared crate's.
             get(|| async {
                 axum::Json(serde_json::json!({
@@ -230,7 +230,7 @@ fn gate_routes(
             "/v1/admin/{page}",
             post(email8_gate_server::admin::admin_data),
         )
-        // ── Sentin8:Policy admin API (Phase 28 §3.6 — shared
+        // ── Sentin8:Policy admin API (Phase 28 §3.6 - shared
         // implementation; handlers generic over this state via
         // HasPolicyAdmin).
         .route(

@@ -7,7 +7,7 @@
 //! services (design §3.1).
 //!
 //! Reads the same `captain:svc:{service_type}` HASH captain maintains
-//! (field = `{ip}:{port}`, value = JSON `ServiceInstance`). Read-only —
+//! (field = `{ip}:{port}`, value = JSON `ServiceInstance`). Read-only -
 //! the gate never writes registry state. A 1 s TTL cache collapses the
 //! per-connection read cost; failed connects evict the instance from
 //! the in-memory set immediately (pump calls `evict`).
@@ -58,7 +58,7 @@ struct ServiceSet {
 }
 
 /// Registry client: one GLIDE client shared by all lookups (the
-/// cert-identity factory presents the gate's `email8:gate` workload —
+/// cert-identity factory presents the gate's `email8:gate` workload -
 /// platform group DESIGN.md §3.1), with a per-service TTL cache.
 #[derive(Clone)]
 pub struct Registry {
@@ -69,7 +69,7 @@ pub struct Registry {
 
 impl Registry {
     /// Connect over the Valkey TLS plane, presenting the `email8:gate`
-    /// workload certificate identity (CN→ACL user — group DESIGN.md
+    /// workload certificate identity (CN→ACL user - group DESIGN.md
     /// §3.1; the user is provisioned by `vertical enroll` from the
     /// gate's `m2m_grants` declaration).
     ///
@@ -116,7 +116,7 @@ impl Registry {
                 .then(a.local_port.cmp(&b.local_port))
         });
         // Keep the old set if the refresh came back empty (registry
-        // blip) — better to route to a possibly-stale instance than to
+        // blip) - better to route to a possibly-stale instance than to
         // refuse everything. Eviction on failed connect is the real
         // removal path.
         if !sorted.is_empty() {
@@ -162,7 +162,7 @@ impl Registry {
     /// The listener map published by the *first Active instance* of
     /// `service_type` (`captain:listeners:{svc}:{instance_key}` hash:
     /// field = proto, value = JSON `{port, implicit_tls}`). Empty map
-    /// when nothing is published yet (gate then refuses — visible).
+    /// when nothing is published yet (gate then refuses - visible).
     pub async fn listener_map(&self, service_type: &str) -> ListenerMap {
         let instances = self.active_instances(service_type).await;
         let Some(inst) = instances.first() else {

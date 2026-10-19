@@ -23,7 +23,7 @@ use tokio::sync::Semaphore;
 
 /// Bind a raw listener. When `EMAIL8_GATE_REUSE_PORT=true`, sets
 /// SO_REUSEPORT *and* SO_REUSEADDR before bind so multiple gate
-/// instances can hold the same well-known ports concurrently — the
+/// instances can hold the same well-known ports concurrently - the
 /// kernel load-balances new connections across them, making gate
 /// upgrades zero-downtime (design §4.2, story 7.6). Standard bind
 /// otherwise.
@@ -92,7 +92,7 @@ pub async fn serve_listener(
                     Err(_) => {
                         // Backpressure at the gate ahead of upstream
                         // session machinery (design §5).
-                        tracing::warn!(listener = listener.name, "email8:gate: connection cap reached — refusing");
+                        tracing::warn!(listener = listener.name, "email8:gate: connection cap reached - refusing");
                         let _ = client.shutdown().await;
                         continue;
                     }
@@ -133,7 +133,7 @@ async fn handle_connection(
         .or_else(|| listener_upstream_port_opt(config, listener));
     let Some(upstream_port) = upstream_port else {
         counters::record_upstream_unavailable();
-        tracing::error!(listener, service = %service, "email8:gate: no published listener map and no fallback — refusing");
+        tracing::error!(listener, service = %service, "email8:gate: no published listener map and no fallback - refusing");
         return;
     };
     let mut upstream: Option<(TcpStream, String)> = None;
@@ -154,7 +154,7 @@ async fn handle_connection(
         };
         // Dial the upstream's PUBLISHED raw listener port for this
         // protocol (the registry's local_port is the upstream's shell
-        // HTTPS port — design §4.1).
+        // HTTPS port - design §4.1).
         let dial = format!("{}:{}", inst.local_ip, upstream_port);
         match tokio::time::timeout(timeout, TcpStream::connect(&dial)).await {
             Ok(Ok(stream)) => {
@@ -162,12 +162,12 @@ async fn handle_connection(
                 break;
             }
             Ok(Err(e)) => {
-                tracing::warn!(listener, upstream = %dial, error = %e, "email8:gate: upstream connect failed — evicting");
+                tracing::warn!(listener, upstream = %dial, error = %e, "email8:gate: upstream connect failed - evicting");
                 registry.evict(&service, &inst.key).await;
                 counters::record_upstream_unavailable();
             }
             Err(_) => {
-                tracing::warn!(listener, upstream = %dial, "email8:gate: upstream connect timeout — evicting");
+                tracing::warn!(listener, upstream = %dial, "email8:gate: upstream connect timeout - evicting");
                 registry.evict(&service, &inst.key).await;
                 counters::record_upstream_unavailable();
             }

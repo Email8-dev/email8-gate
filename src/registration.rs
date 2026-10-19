@@ -8,7 +8,7 @@
 //! Output via `--print-registration` flag. The gate is
 //! infrastructure-only for DOMAIN tables (no error codes; the typed
 //! `email8:gate:telemetry:read` scope gates the RFW telemetry page,
-//! story 7.6) — but it carries the platform-standard producer tables:
+//! story 7.6) - but it carries the platform-standard producer tables:
 //! the `gate.audit_journal` leaf-schema table (AUDJOUR-1, migration v2)
 //! that the shell's boot-8c pusher drains to Sys's audit ingest API.
 
@@ -18,7 +18,7 @@ use sentin8::registration::{
 };
 use utoipa::OpenApi;
 
-/// The Shield text of the declared scope-mirror set — public so the
+/// The Shield text of the declared scope-mirror set - public so the
 /// policy wiring tests (POLICY-7) assert against the REAL seed.
 pub const SCOPE_MIRROR_POLICIES: &str = "permit(principal, action == Action::\"email8:gate:telemetry:read\", resource) when { principal.scopes.contains(\"email8:gate:telemetry:read\") };
 permit(principal, action == Action::\"email8:gate:telemetry:read\", resource) when { principal.scopes.contains(\"sentin8:sys:admin\") };
@@ -27,13 +27,13 @@ permit(principal, action == Action::\"email8:gate:telemetry:read\", resource) wh
 
 /// Default declarative policy set (Sentin8:Policy design §3.2/§3.4,
 /// seeded by `vertical enroll` as `origin='platform'`, `mode='enforced'`):
-/// action-granular scope permits over the LIVE effective scope set — the
+/// action-granular scope permits over the LIVE effective scope set - the
 /// exact mirror of the gates this service's handlers evaluate in step 5
 /// (policy design §4.3). Enforced (decision 2026-09-07): step 5 is the
 /// only gate; shadow is the emergency one-UPDATE rollback lever only.
 const POLICIES: &[PolicySetDecl] = &[PolicySetDecl {
     policy_set_name: "scope-mirror",
-    description: "Action-granular scope permits for email8:gate over the LIVE effective scope set (policy design §3.1d). Enforced (decision 2026-09-07) — step 5 is the only gate.",
+    description: "Action-granular scope permits for email8:gate over the LIVE effective scope set (policy design §3.1d). Enforced (decision 2026-09-07) - step 5 is the only gate.",
     // Shield text lives in SCOPE_MIRROR_POLICIES (single source).
     policies: SCOPE_MIRROR_POLICIES,
     schema: None,
@@ -41,18 +41,18 @@ const POLICIES: &[PolicySetDecl] = &[PolicySetDecl {
     default_enabled: true,
 }];
 
-/// Default ReBAC relation tuples (design §3.1c) — none declared by this
+/// Default ReBAC relation tuples (design §3.1c) - none declared by this
 /// service today.
 const RELATIONS: &[RelationDecl] = &[];
 
 /// M2M workload declarations (CERTFREE-4V): the `email8:gate` workload
-/// row drives `vertical enroll`'s Valkey ACL-user provisioning — the
+/// row drives `vertical enroll`'s Valkey ACL-user provisioning - the
 /// certificate CN `m2m-email8:gate` maps to the ACL user of the same
 /// name (group DESIGN.md §3.1), without which the gate's GLIDE
 /// registry reads can never connect. No cross-service scopes are
 /// needed (the gate makes no M2M HTTP calls; the row exists for the
 /// Valkey identity).
-/// AUDJOUR-1: the local audit journal DDL (sql/audit.sql) — the gate's
+/// AUDJOUR-1: the local audit journal DDL (sql/audit.sql) - the gate's
 /// first SQL migration. The `gate` leaf schema is created by the file
 /// itself (it holds nothing else today).
 const SQL_1_AUDIT: &str = include_str!("../sql/audit.sql");
@@ -63,14 +63,14 @@ const M2M_GRANTS: &[M2mGrant] = &[
         scopes: &[],
     },
     M2mGrant {
-        // Shield hot-reload consumer (BUSPOLICY-1 — see email8-access).
+        // Shield hot-reload consumer (BUSPOLICY-1 - see email8-access).
         workload: "email8:gate-policy",
         scopes: &["sentin8:bus:consume", "sentin8:stat:measure"],
     },
     M2mGrant {
         // Audit-journal pusher's sys-ingest scope (AUDJOUR-1): the shell's
         // boot-8c pusher presents the `gate-audit` certificate to Sys
-        // `POST /v1/audit` — this grant row is what makes the workload
+        // `POST /v1/audit` - this grant row is what makes the workload
         // enrollable (the BUSPOLICY-1 class: an undeclared cert mints but
         // can never be authorized).
         workload: "gate-audit",
@@ -80,7 +80,7 @@ const M2M_GRANTS: &[M2mGrant] = &[
 
 /// The gate's PostgreSQL role (group DESIGN.md §3.2): the shell boot's
 /// step-6 pool + the policy-admin surface (ServiceCore.admin) run
-/// against the vertical's database under this role — NOBYPASSRLS,
+/// against the vertical's database under this role - NOBYPASSRLS,
 /// certificate identity, no password.
 const PG_ROLES: &[PgRole] = &[PgRole {
     scope: "email8:gate:telemetry:read",
@@ -111,7 +111,7 @@ const ADMIN_UI_PAGES: &[AdminUiPage] = &[AdminUiPage {
     label: "Gate",
     ui_endpoint: "/v1/admin/ui/gate",
     data_endpoint: "/v1/admin/gate",
-    icon: "0xe30a", // Material Icons "settings_ethernet" — network passthrough
+    icon: "0xe30a", // Material Icons "settings_ethernet" - network passthrough
 }];
 
 fn openapi_spec() -> serde_json::Value {
@@ -143,10 +143,10 @@ pub fn print(section: Option<String>) -> anyhow::Result<()> {
         }),
         sql_migrations: vec![SqlMigration {
             // AUDJOUR-1 migration v2: the local audit journal in the
-            // `gate` leaf schema — the 15-column contract of
+            // `gate` leaf schema - the 15-column contract of
             // `sentin8_audit::audit_journal_sql` (design/sentin8-audit-
             // journal-provisioning-design.md §2.1). v2 (not v1) keeps the
-            // never-reuse invariant — v1 never existed for gate, but the
+            // never-reuse invariant - v1 never existed for gate, but the
             // version ladder starts where the platform's
             // `vertical_migrations` table will never collide.
             version: 2,
@@ -157,7 +157,7 @@ pub fn print(section: Option<String>) -> anyhow::Result<()> {
         service_actions: None,
         m2m_grants: Some(M2M_GRANTS),
         // The shell's step-6 DB pool (ServiceCore.admin backs the policy
-        // admin surface) requires the service's own role — same as every
+        // admin surface) requires the service's own role - same as every
         // shell service (group DESIGN.md §3.2; the DSNDERIVE-1 derived DSN
         // names `email8_gate_service`).
         pg_roles: PG_ROLES,
@@ -171,7 +171,7 @@ pub fn print(section: Option<String>) -> anyhow::Result<()> {
     sentin8::registration::print_registration(section, &reg, openapi_spec)
 }
 
-/// Spec wrappers for the gate's two inline closures (health + telemetry —
+/// Spec wrappers for the gate's two inline closures (health + telemetry -
 /// OAPEC §2; the closures aren't named fns in `main.rs`).
 pub mod spec_helpers {
     /// Spec wrapper for the inline `/v1/health` closure.
@@ -241,7 +241,7 @@ pub mod spec_helpers {
     )),
     security(),
     tags(
-        (name = "email8-gate", description = "Sentin8 Email8:Gate — the mail-protocol ingress (IMAP/POP3/SMTP/DAV proxy)"),
+        (name = "email8-gate", description = "Sentin8 Email8:Gate - the mail-protocol ingress (IMAP/POP3/SMTP/DAV proxy)"),
         (name = "admin-ui", description = "RFW telemetry admin UI"),
         (name = "policy", description = "Shield policy admin (shared annotated wrappers)"),
     ),
