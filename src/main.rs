@@ -170,7 +170,7 @@ async fn bootstrap(core: sentin8::shell::ServiceCore) -> anyhow::Result<Arc<Gate
     // Auth client for the RFW telemetry page (scope-gated).
     let auth_client = sentin8::auth::client::Client::new(sentin8::auth::client::ClientOptions {
         base_url: std::env::var("SENTIN8_AUTH_ISSUER")
-            .unwrap_or_else(|_| "https://auth.ops.sys.sentin8.local".to_string()),
+            .unwrap_or_else(|_| "https://auth.ops.sys.local.sentin8.dev".to_string()),
         ..Default::default()
     });
     // Sentin8:Policy engine (Phase 28, §4.2b - shell-owned boot): the
