@@ -43,4 +43,4 @@ mail plane overview.
 
 ---
 
-**Design attribution:** email8:gate and its underlying concepts were designed by Hamid Jahanzad <Hamid@Jahanzad.com>.
+**Architecture & Design:** email8:gate and its underlying concepts were designed by [Hamid Jahanzad](https://www.linkedin.com/in/hamidjahanzad/).
