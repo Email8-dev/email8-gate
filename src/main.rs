@@ -199,7 +199,7 @@ fn gate_routes(
         .route(
             "/v1/health",
             // Carries the binary's build identity (`version`/`build`,
-            // BUILDID-1) so captain's monitor populates `make status`'s
+            //) so captain's monitor populates `make status`'s
             // VERSION column - the consuming BINARY's identity, never a
             // shared crate's.
             get(|| async {

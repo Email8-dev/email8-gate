@@ -9,7 +9,7 @@
 //! infrastructure-only for DOMAIN tables (no error codes; the typed
 //! `email8:gate:telemetry:read` scope gates the RFW telemetry page,
 //! story 7.6) - but it carries the platform-standard producer tables:
-//! the `gate.audit_journal` leaf-schema table (AUDJOUR-1, migration v2)
+//! the `gate.audit_journal` leaf-schema table (migration v2)
 //! that the shell's boot-8c pusher drains to Sys's audit ingest API.
 
 use sentin8::registration::{
@@ -52,7 +52,7 @@ const RELATIONS: &[RelationDecl] = &[];
 /// registry reads can never connect. No cross-service scopes are
 /// needed (the gate makes no M2M HTTP calls; the row exists for the
 /// Valkey identity).
-/// AUDJOUR-1: the local audit journal DDL (sql/audit.sql) - the gate's
+/// the local audit journal DDL (sql/audit.sql) - the gate's
 /// first SQL migration. The `gate` leaf schema is created by the file
 /// itself (it holds nothing else today).
 const SQL_1_AUDIT: &str = include_str!("../sql/audit.sql");
@@ -63,15 +63,15 @@ const M2M_GRANTS: &[M2mGrant] = &[
         scopes: &[],
     },
     M2mGrant {
-        // Shield hot-reload consumer (BUSPOLICY-1 - see email8-access).
+        // Shield hot-reload consumer (- see email8-access).
         workload: "email8:gate-policy",
         scopes: &["sentin8:bus:consume", "sentin8:stat:measure"],
     },
     M2mGrant {
-        // Audit-journal pusher's sys-ingest scope (AUDJOUR-1): the shell's
+        // Audit-journal pusher's sys-ingest scope : the shell's
         // boot-8c pusher presents the `gate-audit` certificate to Sys
         // `POST /v1/audit` - this grant row is what makes the workload
-        // enrollable (the BUSPOLICY-1 class: an undeclared cert mints but
+        // enrollable (the class: an undeclared cert mints but
         // can never be authorized).
         workload: "gate-audit",
         scopes: &["sentin8:sys:audit:write"],
@@ -142,7 +142,7 @@ pub fn print(section: Option<String>) -> anyhow::Result<()> {
             pages: ADMIN_UI_PAGES,
         }),
         sql_migrations: vec![SqlMigration {
-            // AUDJOUR-1 migration v2: the local audit journal in the
+            // migration v2: the local audit journal in the
             // `gate` leaf schema - the 15-column contract of
             // `sentin8_audit::audit_journal_sql` (design/sentin8-audit-
             // journal-provisioning-design.md §2.1). v2 (not v1) keeps the
@@ -158,7 +158,7 @@ pub fn print(section: Option<String>) -> anyhow::Result<()> {
         m2m_grants: Some(M2M_GRANTS),
         // The shell's step-6 DB pool (ServiceCore.admin backs the policy
         // admin surface) requires the service's own role - same as every
-        // shell service (group DESIGN.md §3.2; the DSNDERIVE-1 derived DSN
+        // shell service (group DESIGN.md §3.2; the derived DSN
         // names `email8_gate_service`).
         pg_roles: PG_ROLES,
         openapi_url: "/openapi.json",

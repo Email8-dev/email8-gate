@@ -31,7 +31,7 @@ graph TD
 - Instance discovery from Valkey; connections forward to live
   instance binds.
 - Protocol-transparent: no mail parsing at the Gate layer.
-- Audit journal (AUDJOUR-1, architecture-principles §6.8): the
+- Audit journal (architecture-principles §6.8): the
   `gate.audit_journal` leaf-schema table (migration v2 - the 15-column
   `sentin8_audit::audit_journal_sql` contract, the gate leaf schema's
   first object) is drained to Sys `POST /v1/audit` by the shell's
