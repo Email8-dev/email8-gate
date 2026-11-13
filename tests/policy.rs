@@ -18,6 +18,26 @@
 //! load against the live `sentin8_policy_sets` table) is covered by the
 //! shell boot path (refuse-to-start) and the workspace SQL suites.
 
+// The embedded registration.rs compiles an utoipa OpenApi derive whose
+// paths()/components() reference crate::admin and crate::counters - embed
+// the real modules so the derive resolves (same sources as the bin).
+#[path = "../src/state.rs"]
+#[allow(dead_code)]
+mod state;
+#[path = "../src/admin.rs"]
+#[allow(dead_code)]
+mod admin;
+#[path = "../src/counters.rs"]
+#[allow(dead_code)]
+mod counters;
+use email8_gate_server::GateError;
+
+#[path = "../src/config.rs"]
+#[allow(dead_code)]
+mod config;
+#[path = "../src/registry.rs"]
+#[allow(dead_code)]
+mod registry;
 #[path = "../src/registration.rs"]
 #[allow(dead_code)]
 mod registration;
