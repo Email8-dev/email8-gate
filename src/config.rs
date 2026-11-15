@@ -55,6 +55,17 @@ fn parse_upstreams(spec: &str, default_service: &str) -> HashMap<String, String>
             Some((svc, lst)) => (svc.trim().to_string(), lst.to_string()),
             None => (default_service.to_string(), entry.to_string()),
         };
+        // Canonicalize the service identity to the colon registry form
+        // (E2E-GATE-1): a dash form (`email8-mta` - the binary name) is
+        // NOT a captain registry key; the gate would dial a service
+        // that has no `captain:svc:` hash and refuse every connection
+        // on that listener. The catalog historically carried the dash
+        // form for the first listener of each CSV entry.
+        let service = if service.contains(':') {
+            service
+        } else {
+            service.replace('-', ":")
+        };
         // A bare listener name may still carry no service prefix; a name
         // that accidentally contains a colon is the service-type form.
         for l in listeners.split_whitespace() {
