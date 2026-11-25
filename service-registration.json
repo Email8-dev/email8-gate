@@ -21,7 +21,8 @@
       "telemetry_property": {
         "slug": "gate",
         "name": "Email8:Gate Telemetry"
-      }
+      },
+      "exposure": "internal"
     }
   ]
 }
